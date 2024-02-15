@@ -121,6 +121,10 @@ individual_vote() {
 index_over_0_prompt() {
     INDEX_INFO=$(cardano-cli conway query gov-state --testnet-magic 4 | \
                  jq -r --arg govActionId "${GOVID}" '.proposals | to_entries[] | select(.value.actionId.txId | contains($govActionId)) | .value' | grep -c "deposit")
+    if [ "$INDEX_INFO" == "0" ]; then
+        echo "No active proposals found for ${GOVID}"
+        exit 0
+    fi
     INDEXNO=$((INDEX_INFO-1))
     echo -e "${LBLUE}######################################################################################"
     echo -e "#                         ${WHITE}HERE IS YOUR GOVERNANCE ACTION(S)                          ${LBLUE}#"
