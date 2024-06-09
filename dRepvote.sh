@@ -138,16 +138,82 @@ index_over_0_prompt() {
             echo -n "Answer: "
             read ANSWER_INDEX
             if [ "$ANSWER_INDEX" = "no" ]; then
-                individual_vote
+                if [[ "$VOTEALL" != "yes" || "$VOTEALL" != "Yes" ]]; then
+                    individual_vote
+                fi
             fi
     fi
 
+}
+vote_all() {
+
+        #query the number of governance actions
+        ALLGOVID=$(cardano-cli conway query gov-state --testnet-magic 4 | jq .proposals | grep -c "deposit")
+        GOVNO=1
+        #query the current epoch number
+        EPOCHNO=$(cardano-cli conway query tip --testnet-magic 4 | jq -r .epoch)
+
+        #loop to vote on everything thats not expired
+        if [[ "$VOTEALL" == "yes" || "$VOTEALL" == "Yes" ]]; then
+        while [ "$GOVNO" -le "$ALLGOVID" ]; do
+            #query the governance action id            
+            GOVID=$(cardano-cli conway query gov-state --testnet-magic 4 | jq .proposals[] | jq -r .actionId.txId | sed -n "${GOVNO}p")
+            #query the governance action expiry
+            GOVEXPIRY=$(cardano-cli conway query gov-state --testnet-magic 4 | jq -r --arg govActionId "${GOVID}" '.proposals | to_entries[] | select(.value.actionId.txId | contains($govActionId)) | .value.expiresAfter')
+            if [ "$EPOCHNO" -le "$GOVEXPIRY" ]; then
+                    echo -e "${LBLUE}######################################################################################"
+                    echo -e "#                         ${WHITE}HERE IS THE GOVERNANCE ACTION NUMBER ${GOVNO}                   ${LBLUE}#"
+                    echo -e "######################################################################################${NC}"
+                    cardano-cli conway query gov-state --testnet-magic 4 | jq -r --arg govActionId "${GOVID}" '.proposals | to_entries[] | select(.value.actionId.txId | contains($govActionId)) | .value'
+                    INDEXNO=$(cardano-cli conway query gov-state --testnet-magic 4 | jq -r --arg govActionId "${GOVID}" '.proposals | to_entries[] | select(.value.actionId.txId | contains($govActionId)) | .value.actionId.govActionIx')
+                    echo -e "${LBLUE}##########################################################################"
+                    echo -e "#   ${WHITE}What is your Vote for the action number ${GOVNO}? yes,no,abstain?          ${LBLUE}#"
+                    echo -e "##########################################################################${NC}"
+                    echo -n "Answer: "
+                    read VOTE
+                    while [[ "$VOTE" != "yes" && "$VOTE" != "no" && "$VOTE" != "abstain" ]]; do
+                        echo -e "${LBLUE}##########################################################################"
+                        echo -e "#       ${WHITE}Invalid vote. Please enter yes, no, or abstain only:             ${LBLUE}#"
+                        echo -e "##########################################################################${NC}"
+                        echo -n "Answer: "
+                        read VOTE
+                    done
+                    cardano-cli conway governance vote create \
+                    --${VOTE} \
+                    --governance-action-tx-id "${GOVID}" \
+                    --governance-action-index "${INDEXNO}" \
+                    --drep-verification-key-file drep.vkey \
+                    --out-file action-votes/action${MOREINDEX}-${INDEXNO}.vote
+                echo " --vote-file action-votes/action${MOREINDEX}-${INDEXNO}.vote" >> action-votes/txvar.txt
+                echo -e "${LBLUE}######################################"
+                echo -e "# ${WHITE}Preparing vote for action ${GOVNO}${LBLUE}       #${NC}"
+                sleep 0.2
+                else
+                echo -e "${LBLUE}#########################################################################################################"
+                echo -e "#                         ${WHITE}THE GOVERNANCE ACTION ${GOVNO} HAS EXPIRED, MOVING TO THE NEXT ONE                    ${LBLUE}#"
+                echo -e "#########################################################################################################${NC}"
+                sleep 1
+            fi
+            MOREINDEX=$((MOREINDEX+1))
+            GOVNO=$((GOVNO+1))
+        done
+        finishing_line
+        fi
 }
 building_action_vote() {
 
     #create the action file directory   
     mkdir action-votes 2>/dev/null
 
+    sleep 1
+    echo -e "${LBLUE}#################################################################"
+    echo -e "#   ${WHITE}Would you like to vote on all governance actions? (yes/no) ${LBLUE} #"
+    echo -e "#################################################################${NC}"
+    echo -n "Answer: "
+    read VOTEALL
+    if [[ "$VOTEALL" == "yes" || "$VOTEALL" == "Yes" ]]; then
+        vote_all
+    fi
     sleep 1
     echo -e "${LBLUE}##########################################"
     echo -e "#   ${WHITE}What is the governance action ID?   ${LBLUE} #"
@@ -226,7 +292,7 @@ echo -e "########${WHITE}@@@@@@@@@@@@@${LBLUE}#${WHITE}@@@@@${LBLUE}#${WHITE}@@@
 echo -e "#########${WHITE}@@@@@@@@@@@${LBLUE}##${WHITE}@@@@@@@@${LBLUE}#${WHITE}@@@${LBLUE}#${WHITE}@@@@${LBLUE}#####${WHITE}@@@@${LBLUE}##${WHITE}@@@@@@@@@${LBLUE}##${WHITE}@@@@${LBLUE}#####${WHITE}@@@@${LBLUE}##${WHITE}@@@@@@@@@${LBLUE}##########${WHITE}@@@@${LBLUE}#######${WHITE}@@@@${LBLUE}###${WHITE}@@@@@@@@@${LBLUE}####${WHITE}@@@@@@@${LBLUE}######"
 echo -e "###########${WHITE}@@@@@@@${LBLUE}######${WHITE}@@@@${LBLUE}###${WHITE}@@${LBLUE}##${WHITE}@${LBLUE}##${WHITE}@${LBLUE}#####${WHITE}@@@${LBLUE}#####${WHITE}@@@@@${LBLUE}####${WHITE}@${LBLUE}#${WHITE}@${LBLUE}######${WHITE}@@@${LBLUE}#####${WHITE}@@@@@${LBLUE}############${WHITE}@@@@${LBLUE}########${WHITE}@@@${LBLUE}#####${WHITE}@@@@@${LBLUE}#########${WHITE}@@@${LBLUE}#######"
 echo -e "###########################################################################################################################################"
-echo -e "                                          ${YELLOW}Batch voting script version 1.01 by Mike Hornan(ABLE)${NC}"             
+echo -e "                                          ${YELLOW}Batch voting script version 1.02 by Mike Hornan(ABLE)${NC}"             
 echo -e ""
 echo -e ""
 echo -e ""
