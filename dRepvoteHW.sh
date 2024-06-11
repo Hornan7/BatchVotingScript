@@ -41,10 +41,10 @@ sleep 0.5
         --tx-file tx.transformed \
         --hw-signing-file payment.hwsfile \
         --hw-signing-file drep.hwsfile \
+        --change-output-key-file payment.hwsfile \
         --testnet-magic 4 \
         --out-file payment.witness \
         --out-file drep.witness \
-        --derivation-type LEDGER
         
         cardano-cli conway transaction assemble \
         --tx-body-file tx.transformed \
