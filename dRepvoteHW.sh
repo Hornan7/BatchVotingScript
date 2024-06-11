@@ -44,22 +44,27 @@ sleep 0.5
         --out-file payment.witness
 
         #create the drep witness
-        if [ -f payment.witness ]; then
-            cardano-hw-cli transaction witness \
-            --tx-file tx.transformed \
-            --hw-signing-file drep.hwsfile \
-            --testnet-magic 4 \
-            --out-file drep.witness
+        while [ ! -f payment.witness ]; do
+            echo -ne "Waiting for payment.witness to be created...\r"
+            sleep 1 # Wait and retry if the payment witness file is not found
+        done
 
-            #assemble the transaction
-            if [ -f drep.witness ]; then
-                cardano-cli conway transaction assemble \
-                --tx-body-file tx.transformed \
-                --witness-file payment.witness \
-                --witness-file drep.witness \
-                --out-file vote-tx.signed
-            fi
-        fi
+        cardano-hw-cli transaction witness \
+        --tx-file tx.transformed \
+        --hw-signing-file drep.hwsfile \
+        --testnet-magic 4 \
+        --out-file drep.witness
+
+        while [ ! -f drep.witness ]; do
+            echo -ne "Waiting for drep.witness to be created...\r"
+            sleep 1 # Wait and retry if the drep witness file is not found
+        done
+
+        cardano-cli conway transaction assemble \
+        --tx-body-file tx.transformed \
+        --witness-file payment.witness \
+        --witness-file drep.witness \
+        --out-file vote-tx.signed
 
 echo -e "${LBLUE}#    ${WHITE} Submiting Transaction On-Chain    ${LBLUE} #"
 echo -e "##########################################${NC}"
