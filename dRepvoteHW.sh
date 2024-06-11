@@ -56,7 +56,7 @@ echo -e "##########################################${NC}"
 sleep 0.5
 
         #Submit the Transaction
-        cardano-cli transaction submit \
+        cardano-cli conway transaction submit \
         --testnet-magic 4 \
         --tx-file vote-tx.signed
 echo -e "${LBLUE}####################################################################"
