@@ -49,7 +49,7 @@ sleep 0.5
         --testnet-magic 4 \
         --out-file drep.witness
 
-        while [ ! -f drep.witness ]; do
+        while [ ! -f drep.witness || ! -f payment.witness ]; do
             echo -ne "Waiting for drep.witness to be created...\r"
             sleep 1 # Wait and retry if the drep witness file is not found
         done
