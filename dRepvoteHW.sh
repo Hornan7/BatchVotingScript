@@ -33,23 +33,33 @@ sleep 0.5
         --tx-file vote-tx.raw \
         --out-file tx.transformed
 
+        rm payment.witness 2>/dev/null
+        rm drep.witness 2>/dev/null
+
+        #create the payment witness
         cardano-hw-cli transaction witness \
         --tx-file tx.transformed \
         --hw-signing-file payment.hwsfile \
         --testnet-magic 4 \
         --out-file payment.witness
 
-        cardano-hw-cli transaction witness \
-        --tx-file tx.transformed \
-        --hw-signing-file drep.hwsfile \
-        --testnet-magic 4 \
-        --out-file drep.witness
+        #create the drep witness
+        if [ -f payment.witness ]; then
+            cardano-hw-cli transaction witness \
+            --tx-file tx.transformed \
+            --hw-signing-file drep.hwsfile \
+            --testnet-magic 4 \
+            --out-file drep.witness
 
-        cardano-cli conway transaction assemble \
-        --tx-body-file tx.transformed \
-        --witness-file payment.witness \
-        --witness-file drep.witness \
-        --out-file vote-tx.signed
+            #assemble the transaction
+            if [ -f drep.witness ]; then
+                cardano-cli conway transaction assemble \
+                --tx-body-file tx.transformed \
+                --witness-file payment.witness \
+                --witness-file drep.witness \
+                --out-file vote-tx.signed
+            fi
+        fi
 
 echo -e "${LBLUE}#    ${WHITE} Submiting Transaction On-Chain    ${LBLUE} #"
 echo -e "##########################################${NC}"
