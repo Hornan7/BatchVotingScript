@@ -20,6 +20,7 @@ sleep 0.5
         $(cat action-votes/txvar.txt) \
         --witness-override 2 \
         --out-file vote-tx.raw
+        --cddl-format
 
 # Remove the action index options file
 rm action-votes/txvar.txt
