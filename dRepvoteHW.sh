@@ -43,12 +43,6 @@ sleep 0.5
         --testnet-magic 4 \
         --out-file payment.witness
 
-        #create the drep witness
-        while [ ! -f payment.witness ]; do
-            echo -ne "Waiting for payment.witness to be created...\r"
-            sleep 1 # Wait and retry if the payment witness file is not found
-        done
-
         cardano-hw-cli transaction witness \
         --tx-file tx.transformed \
         --hw-signing-file drep.hwsfile \
@@ -59,7 +53,7 @@ sleep 0.5
             echo -ne "Waiting for drep.witness to be created...\r"
             sleep 1 # Wait and retry if the drep witness file is not found
         done
-
+        sleep 30
         cardano-cli conway transaction assemble \
         --tx-body-file tx.transformed \
         --witness-file payment.witness \
