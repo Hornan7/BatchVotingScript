@@ -43,11 +43,13 @@ sleep 0.5
         --hw-signing-file drep.hwsfile \
         --testnet-magic 4 \
         --out-file payment.witness \
+        --out-file drep.witness \
         --derivation-type LEDGER
         
         cardano-cli conway transaction assemble \
         --tx-body-file tx.transformed \
         --witness-file payment.witness \
+        --witness-file drep.witness \
         --out-file vote-tx.signed
 
 echo -e "${LBLUE}#    ${WHITE} Submiting Transaction On-Chain    ${LBLUE} #"
