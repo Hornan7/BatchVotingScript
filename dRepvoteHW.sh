@@ -20,7 +20,6 @@ sleep 0.5
         $(cat action-votes/txvar.txt) \
         --witness-override 2 \
         --out-file vote-tx.raw
-        --cddl-format
 
 # Remove the action index options file
 rm action-votes/txvar.txt
@@ -51,12 +50,7 @@ sleep 0.5
         --testnet-magic 4 \
         --out-file drep.witness \
         --derivation-type LEDGER
-
-        while [ ! -f drep.witness || ! -f payment.witness ]; do
-            echo -ne "Waiting for drep.witness to be created...\r"
-            sleep 1 # Wait and retry if the drep witness file is not found
-        done
-        sleep 30
+        
         cardano-cli conway transaction assemble \
         --tx-body-file tx.transformed \
         --witness-file payment.witness \
