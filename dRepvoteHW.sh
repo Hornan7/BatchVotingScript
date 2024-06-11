@@ -52,6 +52,9 @@ sleep 0.5
         --witness-file drep.witness \
         --out-file vote-tx.signed
 
+        rm payment.witness 2>/dev/null
+        rm drep.witness 2>/dev/null
+
 echo -e "${LBLUE}#    ${WHITE} Submiting Transaction On-Chain    ${LBLUE} #"
 echo -e "##########################################${NC}"
 sleep 0.5
