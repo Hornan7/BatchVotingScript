@@ -41,13 +41,15 @@ sleep 0.5
         --tx-file tx.transformed \
         --hw-signing-file payment.hwsfile \
         --testnet-magic 4 \
-        --out-file payment.witness
+        --out-file payment.witness \
+        --derivation-type LEDGER
 
         cardano-hw-cli transaction witness \
         --tx-file tx.transformed \
         --hw-signing-file drep.hwsfile \
         --testnet-magic 4 \
-        --out-file drep.witness
+        --out-file drep.witness \
+        --derivation-type LEDGER
 
         while [ ! -f drep.witness || ! -f payment.witness ]; do
             echo -ne "Waiting for drep.witness to be created...\r"
